@@ -31,8 +31,8 @@ python3 main.py --task agnews --initial_size 1000 --batch_size 64 --pretrained -
 python3 main.py --task agnews --initial_size 1000 --batch_size 64 --pretrained --freeze --acquisition cartography --analysis
 
 # Plots results in a lineplot (Figure 3) -- Warning: can only be run after all acquisition functions have been ran
-python3 main.py --task trec --plot_results
-python3 main.py --task agnews --plot_results
+python3 main.py --task trec --initial_size 500 --plot_results
+python3 main.py --task agnews --initial_size 1000 --plot_results
 
 # Run significant tests (Table 2) -- Warning: can only be run after all acquisition functions have been ran
 python3 main.py --task trec --significance
