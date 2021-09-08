@@ -23,7 +23,7 @@ python3 main.py --task trec --initial_size 500 --batch_size 16 --pretrained --fr
 python3 main.py --task trec --initial_size 500 --batch_size 16 --pretrained --freeze --acquisition cartography --analysis
 
 # Run all acquisition functions for AGNEWS
-python3 main.py --task agnews --initial_size 1000 --batch_size 64 --pretrained --freeze --acquisition random
+python3 main.py --task agnews --initial_size 1000 --batch_size 64 --pretrained --freeze --acquisition random --analysis
 python3 main.py --task agnews --initial_size 1000 --batch_size 64 --pretrained --freeze --acquisition entropy
 python3 main.py --task agnews --initial_size 1000 --batch_size 64 --pretrained --freeze --acquisition leastconfidence --analysis
 python3 main.py --task agnews --initial_size 1000 --batch_size 64 --pretrained --freeze --acquisition bald
