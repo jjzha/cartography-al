@@ -8,7 +8,6 @@ from transformers import DistilBertTokenizer, DistilBertModel
 import numpy as np
 
 logger = logging.getLogger(__name__)
-DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 def data2feats(args: argparse.Namespace, sent: str, label: str, word_to_idx: Dict,
@@ -37,31 +36,13 @@ def initialize_train_pool_test(args: argparse.Namespace, train: np.ndarray, pool
     X_test, y_test = [], []
 
     for sent, cls in train:
-        if args.bert:
-            if args.task == "trec":
-                model_inputs = tokenizer(sent, padding="max_length", max_length=42, return_tensors="pt")
-            else:
-                model_inputs = tokenizer(sent, padding="max_length", max_length=200, return_tensors="pt")
-            with torch.no_grad():
-                feat = torch.flatten(model(**model_inputs.to(DEVICE))[0][:, 0, :]).numpy()
-            cls = np.array(label_to_idx[cls], dtype=np.int64)
-        else:
-            feat, cls = data2feats(args, sent, cls, word_to_idx, label_to_idx)
+        feat, cls = data2feats(args, sent, cls, word_to_idx, label_to_idx)
         X_train.append(feat)
         y_train.append(cls)
 
     if len(pool) != 0:
         for sent, cls in pool:
-            if args.bert:
-                if args.task == "trec":
-                    model_inputs = tokenizer(sent, padding="max_length", max_length=42, return_tensors="pt")
-                else:
-                    model_inputs = tokenizer(sent, padding="max_length", max_length=200, return_tensors="pt")
-                with torch.no_grad():
-                    feat = torch.flatten(model(**model_inputs.to(DEVICE))[0][:, 0, :]).numpy()
-                cls = np.array(label_to_idx[cls], dtype=np.int64)
-            else:
-                feat, cls = data2feats(args, sent, cls, word_to_idx, label_to_idx)
+            feat, cls = data2feats(args, sent, cls, word_to_idx, label_to_idx)
             X_pool.append(feat)
             y_pool.append(cls)
 
@@ -70,16 +51,7 @@ def initialize_train_pool_test(args: argparse.Namespace, train: np.ndarray, pool
         y_pool = []
 
     for sent, cls in test:
-        if args.bert:
-            if args.task == "trec":
-                model_inputs = tokenizer(sent, padding="max_length", max_length=42, return_tensors="pt")
-            else:
-                model_inputs = tokenizer(sent, padding="max_length", max_length=200, return_tensors="pt")
-            with torch.no_grad():
-                feat = torch.flatten(model(**model_inputs.to(DEVICE))[0][:, 0, :]).numpy()
-            cls = np.array(label_to_idx[cls], dtype=np.int64)
-        else:
-            feat, cls = data2feats(args, sent, cls, word_to_idx, label_to_idx)
+        feat, cls = data2feats(args, sent, cls, word_to_idx, label_to_idx)
         X_test.append(feat)
         y_test.append(cls)
 
