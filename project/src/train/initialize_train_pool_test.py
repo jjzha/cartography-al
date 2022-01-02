@@ -30,11 +30,6 @@ def data2feats(args: argparse.Namespace, sent: str, label: str, word_to_idx: Dic
 def initialize_train_pool_test(args: argparse.Namespace, train: np.ndarray, pool: np.ndarray, test: np.ndarray,
                                word_to_idx: Dict,
                                label_to_idx: Dict) -> Tuple:
-    if args.bert:
-        tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-cased")
-        model = DistilBertModel.from_pretrained("distilbert-base-cased")
-        model.to(DEVICE)
-
     logger.info("Generating training, pool, and test instances...")
 
     X_train, y_train = [], []
