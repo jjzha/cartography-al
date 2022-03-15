@@ -2,8 +2,6 @@ import argparse
 import logging
 import os
 from typing import Any, Dict, Tuple
-import torch
-from transformers import DistilBertTokenizer, DistilBertModel
 
 import numpy as np
 
@@ -60,5 +58,10 @@ def initialize_train_pool_test(args: argparse.Namespace, train: np.ndarray, pool
     X_train, y_train = np.array(X_train), np.array(y_train)
     X_pool, y_pool = np.array(X_pool), np.array(y_pool)
     X_test, y_test = np.array(X_test), np.array(y_test)
+
+    # print(Counter(y_train))
+    # print(Counter(y_pool))
+    # print(Counter(y_test))
+    # exit(1)
 
     return X_train, y_train, X_pool, y_pool, X_test, y_test
