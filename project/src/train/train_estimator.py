@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import sys
 from collections import defaultdict
 from typing import Any, List
 
@@ -15,7 +16,6 @@ from sklearn.metrics import accuracy_score
 from torch.utils.data import DataLoader
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-logger = logging.getLogger(__name__)
 
 
 class MLPEstimator:
@@ -25,9 +25,11 @@ class MLPEstimator:
                  num_labels: int,
                  pt_emb: np.ndarray) -> None:
         self.model = MLP(args, vocab_size, emb_dim, num_labels, pt_emb).to(DEVICE)
-        self.criterion = nn.NLLLoss(reduction="mean")
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.0001)
+        self.criterion = nn.NLLLoss()
         self.args = args
+        self.optimizer = optim.AdamW(self.model.parameters(), lr=self.args.learning_rate_main)
+        logging.info(f"Optimizing Main Classifier using {self.optimizer.__class__.__name__} with learning rate "
+                     f"{self.args.learning_rate_main}.")
 
         # cartography
         self.cartography_plot = {"correctness": [], "variability": [], "confidence": []}
@@ -43,7 +45,7 @@ class MLPEstimator:
         # training
         self.model.train()
 
-        for epoch in range(int(os.getenv("EPOCHS"))):
+        for epoch in range(self.args.epochs):
             epoch_loss = 0
             y_pred, y_gold = [], []
 
@@ -53,9 +55,7 @@ class MLPEstimator:
                 batch_x = batch_x.to(DEVICE)
                 batch_y = batch_y.to(DEVICE)
 
-                if (
-                        self.args.acquisition == "discriminative" or self.args.acquisition == "cartography") and epoch == int(
-                        os.getenv("EPOCHS")) - 1:
+                if self.args.acquisition == "discriminative" or self.args.acquisition == "cartography":
                     raw_logits = self.model.forward_discriminative(batch_x)
                     for raw_logit in raw_logits:
                         representations.append(raw_logit.detach().cpu().numpy())
@@ -81,8 +81,12 @@ class MLPEstimator:
                 self.optimizer.step()
                 epoch_loss += loss
 
-            logging.debug(f"Epoch {epoch}: train loss: {epoch_loss / len(y_gold)} "
-                          f"accuracy: {round(accuracy_score(y_pred, y_gold), 4)}")
+            sys.stdout.write(f"\rMain Classifier: Epoch {epoch}, train loss: {epoch_loss / len(y_gold):.4f}"
+                             f", accuracy: {accuracy_score(y_pred, y_gold):.4f}")
+            sys.stdout.flush()
+            # logging.info(f"Main Classifier: Epoch {epoch}: train loss: {epoch_loss / len(y_gold)} "
+            #               f"accuracy: {round(accuracy_score(y_pred, y_gold), 4)}")
+        print("\n", end='')
 
         if self.args.acquisition == "discriminative" or self.args.acquisition == "cartography":
             return representations
