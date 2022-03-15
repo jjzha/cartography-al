@@ -1,9 +1,10 @@
 import argparse
+import json
 import logging
 import os
 import sys
 import time
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 import numpy as np
 import torch
@@ -50,6 +51,8 @@ def start_active_learning(args: argparse.Namespace) -> tuple:
     X_train, y_train, X_pool, y_pool, X_test, y_test = initialize_train_pool_test(args, train, pool, test, word_to_idx,
                                                                                   label_to_idx)
 
+    logging.info(f"Initial Instances Train: {json.dumps(dict(sorted(Counter(y_train.tolist()).items())), indent=4)}")
+
     estimator = MLPEstimator(args, vocab_size, emb_dim, num_labels, embedding_matrix)
     cartography = {"interval": [], "correctness": [], "variability": [], "confidence": []}
 
@@ -74,13 +77,16 @@ def start_active_learning(args: argparse.Namespace) -> tuple:
     active_learning_accuracy_history = [initial_accuracy]
     selected_top_k, confidence_stats, variability_stats, correctness_stats = [], [], [], []
 
-    for i in range(int(os.getenv("ITERATIONS"))):
+    for i in range(args.al_iterations + 1):
         logging.info(f"Active learning iteration: {i + 1}, train size: {len(X_train)}, pool size: {len(X_pool)}")
+
+        if i != 0:
+            X_train_rep = estimator.train(X_train, y_train)
+            accuracy = estimator.evaluate(X_test, y_test)
+            active_learning_accuracy_history.append(accuracy)
 
         if args.acquisition == "discriminative" or args.acquisition == "cartography":
             # prepare representations and data for DAL
-            if i != 0:
-                X_train_rep = estimator.train(X_train, y_train)
             X_pool_rep = estimator.predict(X_pool, y_pool)
 
             if args.acquisition == "discriminative":
@@ -102,17 +108,12 @@ def start_active_learning(args: argparse.Namespace) -> tuple:
                 cal_estimator.weight_reset()
 
         else:
-            # apply model to the pool to retrieve top-k instances
             probas = estimator.predict(X_pool, y_pool)
+            # apply model to the pool to retrieve top-k instances
             top_k_indices = apply_acquisition_function(args, probas)
 
         # add top-k instances from pool to train and remove from pool
         X_train, y_train, X_pool, y_pool = add_and_remove_instances(X_train, y_train, X_pool, y_pool, top_k_indices)
-
-        # retrain model, save accuracy, weight reset for next iter
-        estimator.train(X_train, y_train)
-        accuracy = estimator.evaluate(X_test, y_test)
-        active_learning_accuracy_history.append(accuracy)
 
         if args.analysis:
             selected_top_k.append(top_k_indices)
@@ -123,13 +124,13 @@ def start_active_learning(args: argparse.Namespace) -> tuple:
                 correctness = {idx: transform_correctness_to_bins(correct) for idx, correct in
                                list(estimator.correctness.items())}
                 confidence_stats.append(
-                    np.mean(list(confidences.values())[-int(os.getenv("ACTIVE_LEARNING_BATCHES")):]))
+                        np.mean(list(confidences.values())[-int(os.getenv("ACTIVE_LEARNING_BATCHES")):]))
                 variability_stats.append(
-                    np.mean(list(variability.values())[-int(os.getenv("ACTIVE_LEARNING_BATCHES")):]))
+                        np.mean(list(variability.values())[-int(os.getenv("ACTIVE_LEARNING_BATCHES")):]))
                 correctness_stats.append(
-                    np.mean(list(correctness.values())[-int(os.getenv("ACTIVE_LEARNING_BATCHES")):]))
+                        np.mean(list(correctness.values())[-int(os.getenv("ACTIVE_LEARNING_BATCHES")):]))
 
         reset_estimator(estimator)
-        logger.info(f"Accuracy history: {active_learning_accuracy_history}")
+        logger.info(f"Test set accuracy history: {active_learning_accuracy_history}")
 
     return active_learning_accuracy_history, selected_top_k, confidence_stats, variability_stats, correctness_stats
