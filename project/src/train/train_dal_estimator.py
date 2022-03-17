@@ -46,7 +46,7 @@ class DALEstimator:
                 raw_logits = self.model.forward(batch_x)
                 predictions = self.model.predict_class(raw_logits)
 
-                if epoch == int(os.getenv("EPOCHS_DISCRIMINATIVE")) - 1:
+                if epoch == self.args.epochs - 1:
                     probabilities = self.model.predict_proba(raw_logits.detach().cpu())
                     for i, proba in zip(idx, probabilities):
                         indices.append(int(i))
