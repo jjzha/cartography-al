@@ -19,6 +19,7 @@ def check_overlap_indices(args):
             with open(entry.path, "r") as f:
                 data = json.load(f)
                 for interval, indices in data.items():
+                    print(interval, indices)
                     if not total_results.get(method):
                         total_results[method] = {
                                 interval: {"seed_1": indices[0], "seed_2": indices[1], "seed_3": indices[2],

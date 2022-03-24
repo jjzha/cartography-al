@@ -8,7 +8,7 @@ def split_data(train: np.ndarray, train_size: int) -> Tuple:
     """Splits training data into initial training set and pool"""
 
     if train_size != len(train):
-        train, pool = train_test_split(train, shuffle=False, train_size=train_size)
+        train, pool = train_test_split(train, shuffle=True, train_size=train_size, random_state=42)
     else:
         train = train
         pool = []

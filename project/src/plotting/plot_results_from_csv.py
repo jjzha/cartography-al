@@ -8,21 +8,23 @@ import seaborn as sns
 
 def plot_from_csv(args: argparse.Namespace):
     df_dict = {"accuracy": [], "interval": [], "strategy": []}
+    strategies = ["bald", "cartography", "discriminative", "entropy", "leastconfidence", "random"]
 
     if args.task == "agnews":
         total_size = float(os.getenv("MAX_INSTANCE_AGNEWS"))
     else:
         total_size = float(os.getenv("MAX_INSTANCE_TREC"))
 
-    for entry in os.scandir(f"{os.getenv('RESULTS_PATH')}{args.task}"):
-        if entry.path.endswith(".csv") and not entry.path.endswith("analysis.csv"):
+    for strat in strategies:
+        for entry in os.scandir(f"{os.getenv('RESULTS_PATH')}{args.task}"):
             strategy = entry.path.split("/")[-1].split("_")[0]
+            if entry.path.endswith(".csv") and strategy == strat:
 
-            with open(entry.path) as f:
-                df = pd.read_csv(f, sep="\t")
-                df_dict["accuracy"] += df["score"].tolist()
-                df_dict["interval"] += [(s + float(args.initial_size)) / total_size * 100 for s in df["step"].tolist()]
-                df_dict["strategy"] += [strategy for _ in range(len(df))]
+                with open(entry.path) as f:
+                    df = pd.read_csv(f, sep="\t")
+                    df_dict["accuracy"] += df["score"].tolist()
+                    df_dict["interval"] += [(s + float(args.initial_size)) / total_size * 100 for s in df["step"].tolist()]
+                    df_dict["strategy"] += [strategy for _ in range(len(df))]
 
     sns.set(style="whitegrid")
     paper_rc = {'lines.linewidth': 1.8, 'lines.markersize': 5}
@@ -45,4 +47,4 @@ def plot_from_csv(args: argparse.Namespace):
     ax.legend(fancybox=True, shadow=True, title="Sampling strategy", loc="lower right", bbox_to_anchor=(1.0, 0.0),
               ncol=1)
     plt.tight_layout()
-    plt.savefig(f"{os.getenv('PLOT_PATH')}{args.task}/{args.task}_results_{args.initial_size}.pdf", dpi=300)
+    plt.savefig(f"{os.getenv('PLOT_PATH')}{args.task}/{args.task}_results_{args.initial_size}_final.pdf", dpi=300)
