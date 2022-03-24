@@ -24,11 +24,19 @@ def check_significance(args: argparse.Namespace):
     for strat in strategies:
         for entry in os.scandir(f"{os.getenv('RESULTS_PATH')}{args.task}"):
             strategy = entry.path.split("/")[-1].split("_")[0]
+<<<<<<< HEAD
             if entry.path.endswith(".csv") and strategy == strat:
                 with open(entry.path) as f:
                     df = pd.read_csv(f, sep="\t")
                     scores = []
                     for row in df.itertuples():
+=======
+            with open(entry.path) as f:
+                df = pd.read_csv(f, sep="\t")
+                scores = []
+                for row in df.itertuples():
+                    if row.step == 1450:
+>>>>>>> ebd1d642135f9e01946c117f65afb47e7810230e
                         scores.append(row.score)
                     strategy_order[strategy].extend(scores)
 
