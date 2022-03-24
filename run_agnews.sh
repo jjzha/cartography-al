@@ -2,11 +2,7 @@ EXP_PATH=project/resources/logs/agnews
 
 SEEDS=( 398048 127003 259479 869323 570852 )
 FUNCTIONS=( "random" "entropy" "leastconfidence" "bald" "discriminative" "cartography" )
-<<<<<<< HEAD
-#FUNCTIONS=( "discriminative" )
-=======
 
->>>>>>> ebd1d642135f9e01946c117f65afb47e7810230e
 # iterate over seeds
 for rsd_idx in "${!SEEDS[@]}"; do
   # iterate over encoders
@@ -21,11 +17,7 @@ for rsd_idx in "${!SEEDS[@]}"; do
                     --learning_rate_main 0.0001 \
                     --learning_rate_binary 0.00005 \
                     --epochs 30 \
-<<<<<<< HEAD
                     --al_iterations 30 \
-=======
-                    --al_iterations 20 \
->>>>>>> ebd1d642135f9e01946c117f65afb47e7810230e
                     --seed ${SEEDS[$rsd_idx]} \
                     --pretrained \
                     --freeze \
