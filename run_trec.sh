@@ -1,3 +1,4 @@
+mkdir -p project/{resources/{cartography_plots,embeddings,indices,mapping,logs/{agnews,trec}},results/{agnews,trec},plots/{agnews,trec}}
 EXP_PATH=project/resources/logs/trec
 
 SEEDS=( 398048 127003 259479 869323 570852 )

@@ -8,33 +8,33 @@ import pandas as pd
 import seaborn as sns
 
 
-logger = logging.getLogger(__name__)
-
-
 def check_overlap_indices(args):
     total_results = {}
-    for entry in os.scandir(f"{os.getenv('INDICES_PATH')}"):
-        if args.task in entry.path:
-            method = entry.path.split("/")[-1].split("_")[-1].split(".")[0]
-            with open(entry.path, "r") as f:
-                data = json.load(f)
-                for interval, indices in data.items():
-                    print(interval, indices)
-                    if not total_results.get(method):
-                        total_results[method] = {
-                                interval: {"seed_1": indices[0], "seed_2": indices[1], "seed_3": indices[2],
-                                           "seed_4": indices[3], "seed 5": indices[4]}}
-                    elif interval not in total_results.get(method):
-                        total_results[method].update(
-                                {interval: {"seed_1": indices[0], "seed_2": indices[1], "seed_3": indices[2],
-                                            "seed_4": indices[3], "seed 5": indices[4]}})
-                    elif "seed_1" not in total_results[method].get(interval):
-                        total_results[method][interval].update(
-                                {"seed_1": indices[0], "seed_2": indices[1], "seed_3": indices[2], "seed_4": indices[3],
-                                 "seed 5": indices[4]})
+    for fo in os.listdir(f"{os.getenv('INDICES_PATH')}{args.task}"):
+        method = fo.split("/")[-1].split("_")[-2]
+        seed = fo.split("/")[-1].split("_")[-1].split(".")[0]
+        with open(f"{os.getenv('INDICES_PATH')}{args.task}/{fo}", "r") as f:
+            data = json.load(f)
+            for interval, indices in data.items():
+                if not total_results.get(method):
+                    total_results[method] = {interval: {seed: indices[0]}}
+                elif not total_results.get(method).get(interval):
+                    total_results[method].update({interval: {seed: indices[0]}})
+                else:
+                    total_results[method][interval].update({seed: indices[0]})
+                    #                        "seed_2": indices[1], "seed_3": indices[2],
+                    #                        "seed_4": indices[3], "seed 5": indices[4]}}
+                    # elif interval not in total_results.get(method):
+                    #     total_results[method].update(
+                    #             {interval: {"seed_1": indices[0], "seed_2": indices[1], "seed_3": indices[2],
+                    #                         "seed_4": indices[3], "seed 5": indices[4]}})
+                    # elif "seed_1" not in total_results[method].get(interval):
+                    #     total_results[method][interval].update(
+                    #             {"seed_1": indices[0], "seed_2": indices[1], "seed_3": indices[2], "seed_4": indices[3],
+                    #              "seed 5": indices[4]})
 
     df_total_results = pd.DataFrame.from_dict(total_results)
-    logger.info(df_total_results)
+    print(df_total_results)
 
     d = {}
     for row in df_total_results.itertuples():
@@ -70,8 +70,8 @@ def check_overlap_indices(args):
             for val in values:
                 total[method] += val
 
-    logging.info(f"Overlapping instances {args.task} over {len(os.getenv('SEEDS').split())} random seeds: {total}")
+    print(f"Overlapping instances {args.task} over {len(os.getenv('SEEDS').split())} random seeds: {total}")
     total_instances_for_al = int(os.getenv('ITERATIONS')) * int(os.getenv('ACTIVE_LEARNING_BATCHES'))
     for method, val in total.items():
         percentage_overlap = val / (total_instances_for_al * len(os.getenv('SEEDS').split()))
-        logging.info(f"{method}: {'{:.5E}'.format(percentage_overlap)}")
+        print(f"{method}: {'{:.5E}'.format(percentage_overlap)}")

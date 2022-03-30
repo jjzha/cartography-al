@@ -47,4 +47,4 @@ def plot_from_csv(args: argparse.Namespace):
     ax.legend(fancybox=True, shadow=True, title="Sampling strategy", loc="lower right", bbox_to_anchor=(1.0, 0.0),
               ncol=1)
     plt.tight_layout()
-    plt.savefig(f"{os.getenv('PLOT_PATH')}{args.task}/{args.task}_results_{args.initial_size}_final.pdf", dpi=300)
+    plt.savefig(f"{os.getenv('PLOT_PATH')}{args.task}/{args.task}_results_{args.initial_size}.pdf", dpi=300)

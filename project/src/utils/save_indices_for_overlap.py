@@ -13,5 +13,6 @@ def save_indices_for_overlap(args: argparse.Namespace, total: int, steps: int, s
             selected_top_k_dict[str(step)].append([(int(args.initial_size) + step) + idx for idx in idx_list])
 
     logging.info(f"Overlapping Indices: {json.dumps(selected_top_k_dict)}")
-    with open(f"{os.getenv('INDICES_PATH')}/top_k_{args.task}_{args.acquisition}_{args.seed}.json", "w") as f:
+    with open(f"{os.getenv('INDICES_PATH')}{args.task}/top_k_{args.task}_{args.acquisition}_{args.seed}.json",
+              "w") as f:
         json.dump(selected_top_k_dict, f)
