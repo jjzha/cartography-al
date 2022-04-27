@@ -1,7 +1,5 @@
 # Cartography Active Learning
 
-**\[Important note 31/01/2021\]**: The code currently consists of a bug that needs resolving. We plan to address this bug in the coming months.
-
 This repository contains the code and data for the paper:
 
 Mike Zhang and Barbara Plank. 2021. [**Cartography Active Learning**](https://aclanthology.org/2021.findings-emnlp.36.pdf). In Findings of the Association for Computational Linguistics: EMNLP 2021.

@@ -7,6 +7,7 @@ from project.src.train.generate_cartography import transform_correctness_to_bins
 def prepare_data_for_cal(X_train_rep: list, X_pool_rep: list, correctness: dict) -> Tuple:
     correctness = {idx: transform_correctness_to_bins(correct) for idx, correct in list(correctness.items())}
     X_train, y_train = [], []
+
     for idx, label in correctness.items():
         X_train.append(X_train_rep[int(idx)])
 

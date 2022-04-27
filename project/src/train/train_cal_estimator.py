@@ -1,8 +1,8 @@
 import argparse
 import logging
-import logging
 import os
 from typing import List
+import sys
 
 import numpy as np
 import torch
@@ -14,24 +14,26 @@ from sklearn.metrics import accuracy_score
 from torch.utils.data import DataLoader
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-logger = logging.getLogger(__name__)
+# DEVICE = 'cpu'
 
 
 class CALEstimator:
     def __init__(self, args: argparse.Namespace, current_size: int, emb_dim: int, num_labels: int,
                  class_weights: torch.FloatTensor) -> None:
         self.model = DALMLP(emb_dim, num_labels).to(DEVICE)
-        self.criterion = nn.CrossEntropyLoss(weight=class_weights.to(DEVICE))
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.0001)
+        self.criterion = nn.CrossEntropyLoss()
         self.current_size = current_size
         self.args = args
+        self.optimizer = optim.AdamW(self.model.parameters(), lr=self.args.learning_rate_binary)
+        logging.info(f"Optimizing CAL Classifier using {self.optimizer.__class__.__name__} with learning rate "
+                     f"{self.args.learning_rate_binary}.")
 
     def train(self, X_train: np.ndarray, y_train: np.ndarray):
         train = DatasetMapperDiscriminative(torch.from_numpy(X_train), torch.from_numpy(y_train))
         loader_train = DataLoader(train, batch_size=self.args.batch_size)
         self.model.train()
         
-        for epoch in range(int(os.getenv("EPOCHS_DISCRIMINATIVE"))):
+        for epoch in range(self.args.epochs):
             epoch_loss = 0
             y_pred = []
             y_gold = []
@@ -53,8 +55,10 @@ class CALEstimator:
                 self.optimizer.step()
                 epoch_loss += loss
 
-            logger.debug(f"Epoch {epoch}: train loss: {epoch_loss / len(y_gold)} "
-                         f"accuracy: {round(accuracy_score(y_pred, y_gold), 4)}")
+            sys.stdout.write(f"\rCAL Classifier: Epoch {epoch}, train loss: {epoch_loss / len(y_gold):.4f}"
+                             f", accuracy: {accuracy_score(y_pred, y_gold):.4f}")
+            sys.stdout.flush()
+        print("\n", end='')
 
     def predict(self, X_pool: np.ndarray, y_pool: np.ndarray) -> list:
         pool = DatasetMapperDiscriminative(torch.from_numpy(X_pool), torch.from_numpy(y_pool))
