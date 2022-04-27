@@ -1,4 +1,5 @@
-EXP_PATH=project/resources/logs/trec_check_instances
+mkdir -p project/{resources/{cartography_plots,embeddings,indices,mapping,logs/{agnews,trec}},results/{agnews,trec},plots/{agnews,trec}}
+EXP_PATH=project/resources/logs/trec
 
 SEEDS=( 398048 127003 259479 869323 570852 )
 FUNCTIONS=( "random" "entropy" "leastconfidence" "bald" "discriminative" "cartography" )
@@ -17,7 +18,7 @@ for rsd_idx in "${!SEEDS[@]}"; do
                     --learning_rate_main 0.0001 \
                     --learning_rate_binary 0.00005 \
                     --epochs 30 \
-                    --al_iterations 20 \
+                    --al_iterations 30 \
                     --seed ${SEEDS[$rsd_idx]} \
                     --pretrained \
                     --freeze \

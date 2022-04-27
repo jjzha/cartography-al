@@ -8,21 +8,23 @@ import seaborn as sns
 
 def plot_from_csv(args: argparse.Namespace):
     df_dict = {"accuracy": [], "interval": [], "strategy": []}
+    strategies = ["bald", "cartography", "discriminative", "entropy", "leastconfidence", "random"]
 
     if args.task == "agnews":
         total_size = float(os.getenv("MAX_INSTANCE_AGNEWS"))
     else:
         total_size = float(os.getenv("MAX_INSTANCE_TREC"))
 
-    for entry in os.scandir(f"{os.getenv('RESULTS_PATH')}{args.task}"):
-        if entry.path.endswith(".csv") and not entry.path.endswith("analysis.csv"):
+    for strat in strategies:
+        for entry in os.scandir(f"{os.getenv('RESULTS_PATH')}{args.task}"):
             strategy = entry.path.split("/")[-1].split("_")[0]
+            if entry.path.endswith(".csv") and strategy == strat:
 
-            with open(entry.path) as f:
-                df = pd.read_csv(f, sep="\t")
-                df_dict["accuracy"] += df["score"].tolist()
-                df_dict["interval"] += [(s + float(args.initial_size)) / total_size * 100 for s in df["step"].tolist()]
-                df_dict["strategy"] += [strategy for _ in range(len(df))]
+                with open(entry.path) as f:
+                    df = pd.read_csv(f, sep="\t")
+                    df_dict["accuracy"] += df["score"].tolist()
+                    df_dict["interval"] += [(s + float(args.initial_size)) / total_size * 100 for s in df["step"].tolist()]
+                    df_dict["strategy"] += [strategy for _ in range(len(df))]
 
     sns.set(style="whitegrid")
     paper_rc = {'lines.linewidth': 1.8, 'lines.markersize': 5}

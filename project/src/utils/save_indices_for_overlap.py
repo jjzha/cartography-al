@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import os
 from collections import defaultdict
 
@@ -11,5 +12,7 @@ def save_indices_for_overlap(args: argparse.Namespace, total: int, steps: int, s
         for step, idx_list in zip(range(0, total, steps), top_k_run):
             selected_top_k_dict[str(step)].append([(int(args.initial_size) + step) + idx for idx in idx_list])
 
-    with open(f"{os.getenv('INDICES_PATH')}/top_k_{args.task}_{args.acquisition}.json", "w") as f:
+    logging.info(f"Overlapping Indices: {json.dumps(selected_top_k_dict)}")
+    with open(f"{os.getenv('INDICES_PATH')}{args.task}/top_k_{args.task}_{args.acquisition}_{args.seed}.json",
+              "w") as f:
         json.dump(selected_top_k_dict, f)
