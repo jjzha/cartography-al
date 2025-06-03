@@ -39,5 +39,5 @@ to make sure that there are folders available for the files to go into.
 }
 ```
 ## Contact
-If there is any issue, please reach out to Mike Zhang (mikz@itu.dk) or create an issue in this repository.
+If there is any issue, please reach out to Mike Zhang (jjz@cs.aau.dk) or create an issue in this repository.
   
